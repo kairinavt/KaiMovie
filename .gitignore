@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production & Build outputs
+dist/
+build/
+.dart_tool/
+.pub-cache/
+.pub/
+
+# Misc
+.DS_Store
+*.pem
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Android / Flutter build
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/build/
+mobile/android/.gradle
+mobile/android/captures
+mobile/android/app/debug
+mobile/android/app/profile
+mobile/android/app/release
+
+# Web build
+web/dist/
+web/.angular/
