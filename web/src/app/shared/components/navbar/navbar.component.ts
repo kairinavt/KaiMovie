@@ -89,10 +89,10 @@ import { AuthService, User } from '../../../core/services/auth.service';
 
           <!-- Desktop User Profile Badge & Menu -->
           <div class="user-profile desktop-only" *ngIf="currentUser; else loginBtn">
-            <div class="avatar-pill">
+            <a routerLink="/trang-ca-nhan" class="avatar-pill" title="Trang Cá Nhân">
               <div class="avatar-circle">{{ getInitials(currentUser.name) }}</div>
               <span class="user-name">{{ currentUser.name }}</span>
-            </div>
+            </a>
             <button class="logout-icon-btn" (click)="onLogout()" title="Đăng xuất">
               🚪
             </button>
@@ -126,6 +126,7 @@ import { AuthService, User } from '../../../core/services/auth.service';
           <a [routerLink]="['/the-loai', 'hoat-hinh']" class="mobile-nav-link" (click)="closeMobileMenu()">🐉 Hoạt Hình Anime</a>
           <a [routerLink]="['/the-loai', 'tv-shows']" class="mobile-nav-link" (click)="closeMobileMenu()">📺 TV Shows & Reality</a>
           <a routerLink="/yeu-thich" class="mobile-nav-link" (click)="closeMobileMenu()">❤️ Phim Yêu Thích</a>
+          <a routerLink="/trang-ca-nhan" class="mobile-nav-link" (click)="closeMobileMenu()">👤 Trang Cá Nhân</a>
 
           <!-- Mobile Categories Chips Section -->
           <div class="mobile-section-title">📂 Thể Loại Phim</div>
@@ -142,10 +143,10 @@ import { AuthService, User } from '../../../core/services/auth.service';
           <!-- Mobile Auth Actions Bar -->
           <div class="mobile-auth-bar">
             <div *ngIf="currentUser; else mobileLogin" class="mobile-user-info">
-              <div class="avatar-pill">
+              <a routerLink="/trang-ca-nhan" class="avatar-pill" (click)="closeMobileMenu()">
                 <div class="avatar-circle">{{ getInitials(currentUser.name) }}</div>
                 <span>{{ currentUser.name }}</span>
-              </div>
+              </a>
               <button class="btn btn-secondary btn-sm" (click)="onLogout(); closeMobileMenu()">Đăng xuất</button>
             </div>
             <ng-template #mobileLogin>
@@ -448,6 +449,8 @@ import { AuthService, User } from '../../../core/services/auth.service';
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      text-decoration: none;
+      cursor: pointer;
     }
 
     .avatar-circle {

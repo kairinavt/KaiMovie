@@ -34,6 +34,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/favorites/favorites.component').then(m => m.FavoritesComponent)
   },
   {
+    path: 'trang-ca-nhan',
+    loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
+  },
+  {
+    path: 'profile',
+    redirectTo: 'trang-ca-nhan'
+  },
+  {
     path: '**',
     redirectTo: ''
   }

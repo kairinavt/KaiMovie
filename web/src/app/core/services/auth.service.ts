@@ -8,6 +8,11 @@ export interface User {
   email: string;
   name: string;
   avatar?: string;
+  bio?: string;
+  vipLevel?: string;
+  accentColor?: string;
+  preferredQuality?: string;
+  autoplayNext?: boolean;
 }
 
 @Injectable({
@@ -55,6 +60,11 @@ export class AuthService {
           id: 'user-' + Date.now(),
           email: payload.email,
           name: payload.name,
+          vipLevel: '⭐ Thành Viên VIP',
+          bio: 'Yêu thích điện ảnh & phim 4K mượt mà trên KaiMovie!',
+          accentColor: '#ff2a5f',
+          preferredQuality: '1080p',
+          autoplayNext: true,
         };
         this.saveAuth('jwt-local-token-' + Date.now(), fallbackUser);
         return of({ success: true, data: { token: 'jwt-local-token', user: fallbackUser } });
@@ -74,6 +84,11 @@ export class AuthService {
           id: 'user-' + Date.now(),
           email: payload.email,
           name: payload.email.split('@')[0],
+          vipLevel: '⭐ Thành Viên VIP',
+          bio: 'Yêu thích điện ảnh & phim 4K mượt mà trên KaiMovie!',
+          accentColor: '#ff2a5f',
+          preferredQuality: '1080p',
+          autoplayNext: true,
         };
         this.saveAuth('jwt-local-token-' + Date.now(), fallbackUser);
         return of({ success: true, data: { token: 'jwt-local-token', user: fallbackUser } });
@@ -93,6 +108,11 @@ export class AuthService {
           id: 'google-user-' + Date.now(),
           email: 'user.google@gmail.com',
           name: 'Tài Khoản Google',
+          vipLevel: '👑 VIP Super Pro',
+          bio: 'Tài khoản Google chính chủ KaiMovie',
+          accentColor: '#a855f7',
+          preferredQuality: '4K Ultra',
+          autoplayNext: true,
         };
         this.saveAuth('google-jwt-token', fallbackUser);
         return of({ success: true, data: { token: 'google-jwt-token', user: fallbackUser } });
@@ -112,6 +132,11 @@ export class AuthService {
           id: 'facebook-user-' + Date.now(),
           email: 'user.facebook@facebook.com',
           name: 'Tài Khoản Facebook',
+          vipLevel: '⭐ Thành Viên VIP',
+          bio: 'Tài khoản Facebook chính chủ',
+          accentColor: '#1877f2',
+          preferredQuality: '1080p',
+          autoplayNext: true,
         };
         this.saveAuth('facebook-jwt-token', fallbackUser);
         return of({ success: true, data: { token: 'facebook-jwt-token', user: fallbackUser } });
@@ -132,11 +157,24 @@ export class AuthService {
           email: payload.email,
           name: payload.name,
           avatar: payload.avatar || '',
+          vipLevel: '👑 VIP Super Pro',
+          bio: `Thành viên đăng nhập qua ${payload.provider}`,
+          accentColor: '#ff2a5f',
+          preferredQuality: '1080p',
+          autoplayNext: true,
         };
         this.saveAuth(`${payload.provider}-jwt-token`, fallbackUser);
         return of({ success: true, data: { token: `${payload.provider}-jwt-token`, user: fallbackUser } });
       })
     );
+  }
+
+  updateProfile(updatedFields: Partial<User>): void {
+    const current = this.currentUserValue;
+    if (current) {
+      const newUser: User = { ...current, ...updatedFields };
+      this.saveAuth(this.getToken() || 'default-token', newUser);
+    }
   }
 
   logout(): void {
