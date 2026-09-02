@@ -35,7 +35,12 @@ export interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:5000/api/v1/movies';
+  private get baseUrl(): string {
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return 'https://vsmov.com/api';
+    }
+    return 'http://localhost:5000/api/v1/movies';
+  }
 
   constructor(private http: HttpClient) {}
 
