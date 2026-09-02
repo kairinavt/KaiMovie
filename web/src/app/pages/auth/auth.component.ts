@@ -453,29 +453,66 @@ export class AuthComponent implements OnInit {
   onGoogleLogin(): void {
     this.errorMessage = '';
     this.loading = true;
-    this.setSafetyTimeout();
 
-    this.fallbackGoogleLogin();
-  }
-
-  fallbackGoogleLogin(): void {
-    const profile = {
-      provider: 'google' as const,
-      email: 'user.google@gmail.com',
-      name: 'Tài Khoản Google',
-      avatar: 'https://lh3.googleusercontent.com/a/default'
-    };
-
-    this.authService.socialLogin(profile).subscribe({
-      next: () => {
+    if (typeof google !== 'undefined' && google.accounts?.oauth2) {
+      try {
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: this.googleClientId,
+          scope: 'email profile',
+          callback: (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+              })
+              .then(res => res.json())
+              .then(gUser => {
+                this.ngZone.run(() => {
+                  if (gUser && gUser.email) {
+                    this.authService.socialLogin({
+                      provider: 'google',
+                      email: gUser.email,
+                      name: gUser.name || gUser.email.split('@')[0],
+                      avatar: gUser.picture || '',
+                      providerId: gUser.sub || ''
+                    }).subscribe({
+                      next: () => {
+                        this.loading = false;
+                        this.router.navigate(['/trang-ca-nhan']);
+                      },
+                      error: (err) => {
+                        this.loading = false;
+                        this.errorMessage = err.error?.message || err.message || 'Đăng nhập Google thất bại. Thử lại sau.';
+                      }
+                    });
+                  } else {
+                    this.loading = false;
+                    this.errorMessage = 'Không lấy được thông tin từ Google';
+                  }
+                });
+              })
+              .catch(err => {
+                this.ngZone.run(() => {
+                  this.loading = false;
+                  this.errorMessage = 'Lỗi kết nối đến dịch vụ Google OAuth';
+                });
+              });
+            } else {
+              this.loading = false;
+              this.errorMessage = 'Không lấy được mã xác thực Google';
+            }
+          }
+        });
+        client.requestAccessToken();
+        return;
+      } catch (e: any) {
         this.loading = false;
-        this.router.navigate(['/trang-ca-nhan']);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Đăng nhập Google thất bại';
+        this.errorMessage = 'Lỗi khởi chạy Google Login Popup';
+        return;
       }
-    });
+    }
+
+    this.loading = false;
+    this.errorMessage = 'Google Login chưa sẵn sàng trên trình duyệt này. Vui lòng sử dụng Đăng nhập Email.';
   }
 
   handleGoogleCredentialResponse(response: any): void {
@@ -488,8 +525,9 @@ export class AuthComponent implements OnInit {
             this.loading = false;
             this.router.navigate(['/trang-ca-nhan']);
           },
-          error: () => {
-            this.fallbackGoogleLogin();
+          error: (err) => {
+            this.loading = false;
+            this.errorMessage = err.error?.message || err.message || 'Đăng nhập Google thất bại';
           }
         });
       });
@@ -499,21 +537,17 @@ export class AuthComponent implements OnInit {
   onFacebookLogin(): void {
     this.errorMessage = '';
     this.loading = true;
-    this.setSafetyTimeout();
 
-    this.authService.socialLogin({
-      provider: 'facebook',
-      email: 'user.facebook@facebook.com',
-      name: 'Tài Khoản Facebook',
-      avatar: ''
-    }).subscribe({
+    const fbToken = 'EAAg5aJ2GuocBSaybfEBMTSLnXYQPBhsxvsAlC3esIBh7UeOMLGK8yM0QWlclIQKT5ZCifViP82Js3j7gDHr3NQtiRfoZAMnwhK09F5x4qM7ZBJfxqfZBZAiZC87fmPszBf1fTkCPsNWxCuMkkHQhehQ0enX4euAt21oWwJoBRTDhl7uQK81EdvJDnw0ooj4Mwc0ZBZAN8rIhKOqEPu3xXeZBtmZALBa15IFZAb2wq4gdJHR4cQgvZBZBsSD99fhypzgTZBykrX5RNZAZAZBtTMEi2PIXburx4Sw6jRyneEGWt6ZCUEOMCuHQUbwSNzwzUqV2aZAKjDg8ZChoSc42zOrKjwZDZD';
+
+    this.authService.loginWithFacebook(fbToken).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/trang-ca-nhan']);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Đăng nhập Facebook thất bại';
+        this.errorMessage = err.error?.message || err.message || 'Đăng nhập Facebook thất bại';
       }
     });
   }
@@ -526,7 +560,6 @@ export class AuthComponent implements OnInit {
     }
 
     this.loading = true;
-    this.setSafetyTimeout();
 
     if (this.isLoginMode) {
       this.authService.login({ email: this.email, password: this.password }).subscribe({
@@ -536,7 +569,7 @@ export class AuthComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          this.errorMessage = err.error?.message || 'Đăng nhập thất bại';
+          this.errorMessage = err.error?.message || err.message || 'Sai tài khoản hoặc mật khẩu';
         }
       });
     } else {
@@ -552,17 +585,9 @@ export class AuthComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
-          this.errorMessage = err.error?.message || 'Đăng ký thất bại';
+          this.errorMessage = err.error?.message || err.message || 'Đăng ký thất bại';
         }
       });
     }
-  }
-
-  private setSafetyTimeout(): void {
-    setTimeout(() => {
-      if (this.loading) {
-        this.loading = false;
-      }
-    }, 2000);
   }
 }
