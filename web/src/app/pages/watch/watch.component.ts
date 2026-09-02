@@ -4,7 +4,7 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../core/services/api.service';
-import { AuthService, User } from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-watch',
@@ -43,7 +43,7 @@ import { AuthService, User } from '../../core/services/auth.service';
           </div>
         </div>
 
-        <!-- Server & Episode Selector Box -->
+        <!-- Server Selector Tabs -->
         <div class="control-box">
           <div class="server-tabs" *ngIf="movieData.episodes?.length">
             <span class="label">Đổi Server:</span>
@@ -74,7 +74,7 @@ import { AuthService, User } from '../../core/services/auth.service';
         <!-- Interactive Comments & 5-Star Ratings Section -->
         <div class="comments-section">
           <div class="comments-header">
-            <h3 class="box-subtitle">💬 Bình Luận & Đánh Giá</h3>
+            <h3 class="box-subtitle">💬 Bình Luận & Đánh Giá Phim</h3>
             <div class="avg-rating-badge" *ngIf="avgRating">
               <span class="star">⭐</span> {{ avgRating }} / 5 ({{ totalComments }} đánh giá)
             </div>
@@ -156,10 +156,8 @@ import { AuthService, User } from '../../core/services/auth.service';
       font-size: 1.5rem;
       font-weight: 700;
       color: #ffffff;
-    }
 
-    .movie-title a:hover {
-      color: var(--primary);
+      a { &:hover { color: var(--primary); } }
     }
 
     .active-ep {
@@ -180,12 +178,12 @@ import { AuthService, User } from '../../core/services/auth.service';
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 42, 95, 0.2);
       border: 1px solid var(--border-color);
       margin-bottom: 1.5rem;
-    }
 
-    .player-container iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
     }
 
     .no-player {
@@ -212,12 +210,12 @@ import { AuthService, User } from '../../core/services/auth.service';
       align-items: center;
       gap: 0.75rem;
       flex-wrap: wrap;
-    }
 
-    .server-tabs .label {
-      font-weight: 600;
-      color: var(--text-muted);
-      font-size: 0.9rem;
+      .label {
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
     }
 
     .server-btn {
@@ -230,12 +228,12 @@ import { AuthService, User } from '../../core/services/auth.service';
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-    }
 
-    .server-btn.active, .server-btn:hover {
-      background: var(--primary);
-      border-color: var(--primary);
-      box-shadow: 0 4px 12px var(--primary-glow);
+      &.active, &:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px var(--primary-glow);
+      }
     }
 
     .box-subtitle {
@@ -266,17 +264,17 @@ import { AuthService, User } from '../../core/services/auth.service';
       cursor: pointer;
       text-align: center;
       transition: all 0.2s ease;
-    }
 
-    .ep-item.active {
-      background: var(--primary-gradient);
-      border-color: var(--primary);
-      box-shadow: 0 4px 12px var(--primary-glow);
-    }
+      &.active {
+        background: var(--primary-gradient);
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px var(--primary-glow);
+      }
 
-    .ep-item:hover:not(.active) {
-      background: var(--bg-hover);
-      border-color: #3b82f6;
+      &:hover:not(.active) {
+        background: var(--bg-hover);
+        border-color: #3b82f6;
+      }
     }
 
     /* Comments Section */
@@ -569,21 +567,32 @@ export class WatchComponent implements OnInit {
       return;
     }
 
-    this.apiService.addMovieComment(this.slug, this.newCommentContent.trim(), this.selectedRating).subscribe({
-      next: () => {
-        this.commentMsg = 'Đã đăng bình luận thành công!';
-        this.commentMsgIsError = false;
-        this.newCommentContent = '';
-        this.loadComments();
-      },
-      error: (err) => {
-        if (err.status === 401) {
-          this.commentMsg = 'Vui lòng đăng nhập để bình luận!';
-        } else {
-          this.commentMsg = 'Không thể gửi bình luận. Thử lại sau.';
-        }
-        this.commentMsgIsError = true;
-      }
+    const contentText = this.newCommentContent.trim();
+    const ratingVal = this.selectedRating;
+    const currentUserName = this.authService.currentUserValue?.name || 'Thành Viên';
+
+    // Instant UI update
+    const newCommentItem = {
+      _id: 'c-' + Date.now(),
+      userName: currentUserName,
+      content: contentText,
+      rating: ratingVal,
+      createdAt: new Date().toISOString()
+    };
+
+    this.comments = [newCommentItem, ...this.comments];
+    this.totalComments = this.comments.length;
+    const sum = this.comments.reduce((acc: number, curr: any) => acc + (curr.rating || 5), 0);
+    this.avgRating = Number((sum / this.comments.length).toFixed(1));
+
+    this.commentMsg = 'Đã đăng bình luận thành công!';
+    this.commentMsgIsError = false;
+    this.newCommentContent = '';
+
+    // Persist to backend / local storage
+    this.apiService.addMovieComment(this.slug, contentText, ratingVal).subscribe({
+      next: () => {},
+      error: () => {}
     });
   }
 
