@@ -1,13 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService, User } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-watch',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="watch-page">
       <div class="container" *ngIf="loading">
@@ -41,7 +43,7 @@ import { ApiService } from '../../core/services/api.service';
           </div>
         </div>
 
-        <!-- Server Selector Tabs -->
+        <!-- Server & Episode Selector Box -->
         <div class="control-box">
           <div class="server-tabs" *ngIf="movieData.episodes?.length">
             <span class="label">Đổi Server:</span>
@@ -65,6 +67,65 @@ import { ApiService } from '../../core/services/api.service';
                 (click)="selectEpisode(ep)">
                 {{ ep.name }}
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Comments & 5-Star Ratings Section -->
+        <div class="comments-section">
+          <div class="comments-header">
+            <h3 class="box-subtitle">💬 Bình Luận & Đánh Giá</h3>
+            <div class="avg-rating-badge" *ngIf="avgRating">
+              <span class="star">⭐</span> {{ avgRating }} / 5 ({{ totalComments }} đánh giá)
+            </div>
+          </div>
+
+          <!-- Post Comment Box -->
+          <div class="post-comment-card">
+            <div class="rating-select">
+              <span class="rating-label">Đánh giá của bạn:</span>
+              <div class="stars-picker">
+                <button
+                  *ngFor="let star of [1,2,3,4,5]"
+                  class="star-btn"
+                  [class.active]="selectedRating >= star"
+                  (click)="selectedRating = star">
+                  ★
+                </button>
+              </div>
+            </div>
+
+            <div class="comment-input-group">
+              <textarea
+                placeholder="Viết cảm nhận của bạn về tập phim này..."
+                [(ngModel)]="newCommentContent"
+                rows="3">
+              </textarea>
+              <button class="btn btn-primary btn-submit-comment" (click)="submitComment()">
+                Gửi Bình Luận
+              </button>
+            </div>
+            <div class="comment-msg" *ngIf="commentMsg" [class.error]="commentMsgIsError">{{ commentMsg }}</div>
+          </div>
+
+          <!-- Comments List -->
+          <div class="comments-list">
+            <div class="comment-card" *ngFor="let c of comments">
+              <div class="comment-avatar">
+                {{ getInitials(c.userName) }}
+              </div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="user-name">{{ c.userName }}</span>
+                  <span class="user-stars">★ {{ c.rating || 5 }}</span>
+                  <span class="comment-time">{{ c.createdAt | date:'HH:mm dd/MM/yyyy' }}</span>
+                </div>
+                <p class="comment-content">{{ c.content }}</p>
+              </div>
+            </div>
+
+            <div class="empty-comments" *ngIf="comments.length === 0">
+              <p>Chưa có bình luận nào. Hãy là người đầu tiên để lại đánh giá!</p>
             </div>
           </div>
         </div>
@@ -94,9 +155,11 @@ import { ApiService } from '../../core/services/api.service';
       font-family: var(--font-heading);
       font-size: 1.5rem;
       font-weight: 700;
-      color: #fff;
+      color: #ffffff;
+    }
 
-      a { &:hover { color: var(--primary); } }
+    .movie-title a:hover {
+      color: var(--primary);
     }
 
     .active-ep {
@@ -111,18 +174,18 @@ import { ApiService } from '../../core/services/api.service';
     .player-container {
       width: 100%;
       aspect-ratio: 16 / 9;
-      background: #000;
+      background: #000000;
       border-radius: var(--radius-md);
       overflow: hidden;
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 42, 95, 0.2);
       border: 1px solid var(--border-color);
       margin-bottom: 1.5rem;
+    }
 
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
+    .player-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
 
     .no-player {
@@ -141,6 +204,7 @@ import { ApiService } from '../../core/services/api.service';
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .server-tabs {
@@ -148,37 +212,37 @@ import { ApiService } from '../../core/services/api.service';
       align-items: center;
       gap: 0.75rem;
       flex-wrap: wrap;
+    }
 
-      .label {
-        font-weight: 600;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-      }
+    .server-tabs .label {
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.9rem;
     }
 
     .server-btn {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      color: #fff;
+      color: #ffffff;
       padding: 0.4rem 1rem;
       border-radius: 20px;
       font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
+    }
 
-      &.active, &:hover {
-        background: var(--primary);
-        border-color: var(--primary);
-        box-shadow: 0 4px 12px var(--primary-glow);
-      }
+    .server-btn.active, .server-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px var(--primary-glow);
     }
 
     .box-subtitle {
       font-family: var(--font-heading);
       font-size: 1.1rem;
       font-weight: 700;
-      color: #fff;
+      color: #ffffff;
       margin-bottom: 0.85rem;
     }
 
@@ -194,7 +258,7 @@ import { ApiService } from '../../core/services/api.service';
     .ep-item {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      color: #fff;
+      color: #ffffff;
       padding: 0.5rem 0.25rem;
       border-radius: 6px;
       font-weight: 600;
@@ -202,17 +266,194 @@ import { ApiService } from '../../core/services/api.service';
       cursor: pointer;
       text-align: center;
       transition: all 0.2s ease;
+    }
 
-      &.active {
-        background: var(--primary-gradient);
-        border-color: var(--primary);
-        box-shadow: 0 4px 12px var(--primary-glow);
+    .ep-item.active {
+      background: var(--primary-gradient);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .ep-item:hover:not(.active) {
+      background: var(--bg-hover);
+      border-color: #3b82f6;
+    }
+
+    /* Comments Section */
+    .comments-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+
+    .comments-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+
+    .avg-rating-badge {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    .post-comment-card {
+      background: rgba(20, 24, 36, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .rating-select {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .rating-label {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stars-picker {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .star-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .star-btn.active {
+      color: #fbbf24;
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+
+    .comment-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      textarea {
+        background: rgba(7, 9, 14, 0.8);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem;
+        color: #ffffff;
+        font-family: var(--font-main);
+        font-size: 0.9rem;
+        resize: vertical;
+        outline: none;
+
+        &:focus {
+          border-color: var(--primary);
+        }
+      }
+    }
+
+    .btn-submit-comment {
+      align-self: flex-end;
+      padding: 0.6rem 1.4rem;
+      border-radius: 20px;
+      font-size: 0.88rem;
+    }
+
+    .comment-msg {
+      font-size: 0.82rem;
+      color: #10b981;
+      margin-top: 0.5rem;
+    }
+
+    .comment-msg.error {
+      color: #ef4444;
+    }
+
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .comment-card {
+      display: flex;
+      gap: 0.9rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+      border-radius: 12px;
+    }
+
+    .comment-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .comment-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+
+      .user-name {
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 0.92rem;
       }
 
-      &:hover:not(.active) {
-        background: var(--bg-hover);
-        border-color: #3b82f6;
+      .user-stars {
+        color: #fbbf24;
+        font-size: 0.8rem;
+        font-weight: 800;
       }
+
+      .comment-time {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-left: auto;
+      }
+    }
+
+    .comment-content {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .empty-comments {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
     }
   `]
 })
@@ -226,9 +467,19 @@ export class WatchComponent implements OnInit {
   safePlayerUrl: SafeResourceUrl | null = null;
   loading = true;
 
+  // Comments State
+  comments: any[] = [];
+  totalComments = 0;
+  avgRating = 5;
+  selectedRating = 5;
+  newCommentContent = '';
+  commentMsg = '';
+  commentMsgIsError = false;
+
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
+    private authService: AuthService,
     private sanitizer: DomSanitizer
   ) {}
 
@@ -240,6 +491,7 @@ export class WatchComponent implements OnInit {
         this.epSlug = qParams['ep'] || '';
         if (this.slug) {
           this.loadMovie();
+          this.loadComments();
         }
       });
     });
@@ -283,5 +535,64 @@ export class WatchComponent implements OnInit {
     } else {
       this.safePlayerUrl = null;
     }
+
+    // Save Watch Progress to Server History
+    if (this.movieData?.movie?.slug && ep?.name) {
+      const posterPath = this.movieData.movie.poster_url || this.movieData.movie.thumb_url;
+      this.apiService.saveWatchProgress({
+        movieSlug: this.movieData.movie.slug,
+        movieName: this.movieData.movie.name,
+        posterUrl: this.apiService.getImageUrl(posterPath),
+        episodeSlug: ep.slug || '',
+        episodeName: ep.name,
+        currentTime: 0,
+        duration: 0,
+      }).subscribe({ error: () => {} });
+    }
+  }
+
+  loadComments(): void {
+    this.apiService.getMovieComments(this.slug).subscribe({
+      next: (data) => {
+        this.comments = data.comments || [];
+        this.totalComments = data.totalComments || 0;
+        this.avgRating = data.avgRating || 5;
+      },
+      error: () => {}
+    });
+  }
+
+  submitComment(): void {
+    if (!this.newCommentContent.trim()) {
+      this.commentMsg = 'Vui lòng nhập nội dung bình luận';
+      this.commentMsgIsError = true;
+      return;
+    }
+
+    this.apiService.addMovieComment(this.slug, this.newCommentContent.trim(), this.selectedRating).subscribe({
+      next: () => {
+        this.commentMsg = 'Đã đăng bình luận thành công!';
+        this.commentMsgIsError = false;
+        this.newCommentContent = '';
+        this.loadComments();
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.commentMsg = 'Vui lòng đăng nhập để bình luận!';
+        } else {
+          this.commentMsg = 'Không thể gửi bình luận. Thử lại sau.';
+        }
+        this.commentMsgIsError = true;
+      }
+    });
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'K';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   }
 }

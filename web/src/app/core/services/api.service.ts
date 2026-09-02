@@ -42,6 +42,13 @@ export class ApiService {
     return 'http://localhost:5000/api/v1/movies';
   }
 
+  private get serverBaseUrl(): string {
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return 'http://192.168.100.115:5000/api/v1';
+    }
+    return 'http://localhost:5000/api/v1';
+  }
+
   constructor(private http: HttpClient) {}
 
   private extractListResponse(res: any): ApiResponse<MovieItem> {
@@ -143,5 +150,27 @@ export class ApiService {
       return path;
     }
     return `https://vsmov.com/storage/images/${path}`;
+  }
+
+  // Watch History Endpoints
+  saveWatchProgress(payload: { movieSlug: string; movieName?: string; posterUrl?: string; episodeSlug?: string; episodeName?: string; currentTime: number; duration: number }): Observable<any> {
+    return this.http.post<any>(`${this.serverBaseUrl}/history/progress`, payload);
+  }
+
+  getWatchHistory(): Observable<any[]> {
+    return this.http.get<any>(`${this.serverBaseUrl}/history`).pipe(
+      map(res => res.data || [])
+    );
+  }
+
+  // Movie Comments & Rating Endpoints
+  getMovieComments(movieSlug: string): Observable<any> {
+    return this.http.get<any>(`${this.serverBaseUrl}/comments/${movieSlug}`).pipe(
+      map(res => res.data || { comments: [], totalComments: 0, avgRating: 5 })
+    );
+  }
+
+  addMovieComment(movieSlug: string, content: string, rating: number): Observable<any> {
+    return this.http.post<any>(`${this.serverBaseUrl}/comments/${movieSlug}`, { content, rating });
   }
 }

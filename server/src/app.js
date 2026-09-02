@@ -11,6 +11,8 @@ const apiLimiter = require('./middlewares/rateLimit.middleware');
 const moviesRoutes = require('./modules/movies/movies.routes');
 const authRoutes = require('./modules/auth/auth.routes');
 const favoritesRoutes = require('./modules/favorites/favorites.routes');
+const historyRoutes = require('./modules/history/history.routes');
+const commentsRoutes = require('./modules/comments/comments.routes');
 
 const app = express();
 
@@ -38,7 +40,7 @@ app.get('/api/v1/app/version', (req, res) => {
     latestVersionName: '1.0.0',
     apkUrl: 'http://192.168.100.115:5000/downloads/kaimovie-app.apk',
     tvApkUrl: 'http://192.168.100.115:5000/downloads/kaimovie-tv-app.apk',
-    changelog: 'Bổ sung phiên bản Android TV hỗ trợ điều khiển D-Pad Remote & Leanback UI',
+    changelog: 'Bổ sung tính năng Lịch sử xem, Bình luận đánh giá & Bộ lọc phim nâng cao',
     forceUpdate: false,
   });
 });
@@ -47,6 +49,8 @@ app.get('/api/v1/app/version', (req, res) => {
 app.use('/api/v1/movies', moviesRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/favorites', favoritesRoutes);
+app.use('/api/v1/history', historyRoutes);
+app.use('/api/v1/comments', commentsRoutes);
 
 // Error Handler
 app.use(errorHandler);
