@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -60,6 +60,11 @@ export class ApiService {
   }
 
   constructor(private http: HttpClient) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('kaimovie_token');
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
+  }
 
   private extractListResponse(res: any): ApiResponse<MovieItem> {
     const rawData = res?.data || res;
@@ -164,10 +169,7 @@ export class ApiService {
 
   // Watch History Endpoints with Auth Header & Persistent Storage
   saveWatchProgress(payload: { movieSlug: string; movieName?: string; posterUrl?: string; episodeSlug?: string; episodeName?: string; currentTime: number; duration: number }): Observable<any> {
-    const token = localStorage.getItem('kaimovie_token') || '';
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-    return this.http.post<any>(`${this.serverBaseUrl}/history/progress`, payload, { headers }).pipe(
+    return this.http.post<any>(`${this.serverBaseUrl}/history/progress`, payload, { headers: this.getAuthHeaders() }).pipe(
       catchError(() => {
         const localRaw = localStorage.getItem('kaimovie_local_history');
         let history = localRaw ? JSON.parse(localRaw) : [];
@@ -183,12 +185,9 @@ export class ApiService {
   }
 
   getWatchHistory(): Observable<any[]> {
-    const token = localStorage.getItem('kaimovie_token') || '';
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-    return this.http.get<any>(`${this.serverBaseUrl}/history`, { headers }).pipe(
+    return this.http.get<any>(`${this.serverBaseUrl}/history`, { headers: this.getAuthHeaders() }).pipe(
       map(res => {
-        const serverItems = res.data || [];
+        const serverItems = res?.data || [];
         const localRaw = localStorage.getItem('kaimovie_local_history');
         const localItems = localRaw ? JSON.parse(localRaw) : [];
         return [...localItems, ...serverItems];
@@ -205,7 +204,7 @@ export class ApiService {
   getMovieComments(movieSlug: string): Observable<any> {
     return this.http.get<any>(`${this.serverBaseUrl}/comments/${movieSlug}`).pipe(
       map(res => {
-        const serverComments = res.data?.comments || [];
+        const serverComments = res?.data?.comments || [];
         const localKey = `kaimovie_comments_${movieSlug}`;
         const localRaw = localStorage.getItem(localKey);
         const localComments = localRaw ? JSON.parse(localRaw) : [];
@@ -213,7 +212,7 @@ export class ApiService {
         const combined = [...localComments, ...serverComments];
         let avg = 5;
         if (combined.length > 0) {
-          const sum = combined.reduce((acc, curr) => acc + (curr.rating || 5), 0);
+          const sum = combined.reduce((acc: number, curr: any) => acc + (curr.rating || 5), 0);
           avg = Number((sum / combined.length).toFixed(1));
         }
 
@@ -229,7 +228,7 @@ export class ApiService {
         const localComments = localRaw ? JSON.parse(localRaw) : [];
         let avg = 5;
         if (localComments.length > 0) {
-          const sum = localComments.reduce((acc, curr) => acc + (curr.rating || 5), 0);
+          const sum = localComments.reduce((acc: number, curr: any) => acc + (curr.rating || 5), 0);
           avg = Number((sum / localComments.length).toFixed(1));
         }
 
@@ -243,10 +242,7 @@ export class ApiService {
   }
 
   addMovieComment(movieSlug: string, content: string, rating: number): Observable<any> {
-    const token = localStorage.getItem('kaimovie_token') || '';
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-    return this.http.post<any>(`${this.serverBaseUrl}/comments/${movieSlug}`, { content, rating }, { headers }).pipe(
+    return this.http.post<any>(`${this.serverBaseUrl}/comments/${movieSlug}`, { content, rating }, { headers: this.getAuthHeaders() }).pipe(
       catchError(() => {
         const storedUserRaw = localStorage.getItem('kaimovie_user');
         const user = storedUserRaw ? JSON.parse(storedUserRaw) : { name: 'Thành Viên' };
