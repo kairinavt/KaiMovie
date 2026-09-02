@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 export interface MovieItem {
   _id?: string | number;
@@ -56,7 +56,7 @@ export class ApiService {
         return `http://${window.location.hostname}:5000/api/v1`;
       }
     }
-    return 'http://192.168.100.115:5000/api/v1';
+    return 'http://localhost:5000/api/v1';
   }
 
   constructor(private http: HttpClient) {}
@@ -162,25 +162,113 @@ export class ApiService {
     return `https://vsmov.com/storage/images/${path}`;
   }
 
-  // Watch History Endpoints
+  // Watch History Endpoints with Auth Header & Persistent Storage
   saveWatchProgress(payload: { movieSlug: string; movieName?: string; posterUrl?: string; episodeSlug?: string; episodeName?: string; currentTime: number; duration: number }): Observable<any> {
-    return this.http.post<any>(`${this.serverBaseUrl}/history/progress`, payload);
-  }
+    const token = localStorage.getItem('kaimovie_token') || '';
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-  getWatchHistory(): Observable<any[]> {
-    return this.http.get<any>(`${this.serverBaseUrl}/history`).pipe(
-      map(res => res.data || [])
+    return this.http.post<any>(`${this.serverBaseUrl}/history/progress`, payload, { headers }).pipe(
+      catchError(() => {
+        const localRaw = localStorage.getItem('kaimovie_local_history');
+        let history = localRaw ? JSON.parse(localRaw) : [];
+        history = history.filter((h: any) => h.movieSlug !== payload.movieSlug);
+        history.unshift({
+          ...payload,
+          updatedAt: new Date().toISOString()
+        });
+        localStorage.setItem('kaimovie_local_history', JSON.stringify(history.slice(0, 30)));
+        return of({ success: true });
+      })
     );
   }
 
-  // Movie Comments & Rating Endpoints
+  getWatchHistory(): Observable<any[]> {
+    const token = localStorage.getItem('kaimovie_token') || '';
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    return this.http.get<any>(`${this.serverBaseUrl}/history`, { headers }).pipe(
+      map(res => {
+        const serverItems = res.data || [];
+        const localRaw = localStorage.getItem('kaimovie_local_history');
+        const localItems = localRaw ? JSON.parse(localRaw) : [];
+        return [...localItems, ...serverItems];
+      }),
+      catchError(() => {
+        const localRaw = localStorage.getItem('kaimovie_local_history');
+        const localItems = localRaw ? JSON.parse(localRaw) : [];
+        return of(localItems);
+      })
+    );
+  }
+
+  // Movie Comments & Rating Endpoints with Auth Header & Persistent Local Store
   getMovieComments(movieSlug: string): Observable<any> {
     return this.http.get<any>(`${this.serverBaseUrl}/comments/${movieSlug}`).pipe(
-      map(res => res.data || { comments: [], totalComments: 0, avgRating: 5 })
+      map(res => {
+        const serverComments = res.data?.comments || [];
+        const localKey = `kaimovie_comments_${movieSlug}`;
+        const localRaw = localStorage.getItem(localKey);
+        const localComments = localRaw ? JSON.parse(localRaw) : [];
+
+        const combined = [...localComments, ...serverComments];
+        let avg = 5;
+        if (combined.length > 0) {
+          const sum = combined.reduce((acc, curr) => acc + (curr.rating || 5), 0);
+          avg = Number((sum / combined.length).toFixed(1));
+        }
+
+        return {
+          comments: combined,
+          totalComments: combined.length,
+          avgRating: avg
+        };
+      }),
+      catchError(() => {
+        const localKey = `kaimovie_comments_${movieSlug}`;
+        const localRaw = localStorage.getItem(localKey);
+        const localComments = localRaw ? JSON.parse(localRaw) : [];
+        let avg = 5;
+        if (localComments.length > 0) {
+          const sum = localComments.reduce((acc, curr) => acc + (curr.rating || 5), 0);
+          avg = Number((sum / localComments.length).toFixed(1));
+        }
+
+        return of({
+          comments: localComments,
+          totalComments: localComments.length,
+          avgRating: avg
+        });
+      })
     );
   }
 
   addMovieComment(movieSlug: string, content: string, rating: number): Observable<any> {
-    return this.http.post<any>(`${this.serverBaseUrl}/comments/${movieSlug}`, { content, rating });
+    const token = localStorage.getItem('kaimovie_token') || '';
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    return this.http.post<any>(`${this.serverBaseUrl}/comments/${movieSlug}`, { content, rating }, { headers }).pipe(
+      catchError(() => {
+        const storedUserRaw = localStorage.getItem('kaimovie_user');
+        const user = storedUserRaw ? JSON.parse(storedUserRaw) : { name: 'Thành Viên' };
+
+        const localKey = `kaimovie_comments_${movieSlug}`;
+        const existingRaw = localStorage.getItem(localKey);
+        const existing = existingRaw ? JSON.parse(existingRaw) : [];
+
+        const newComment = {
+          _id: 'c-' + Date.now(),
+          userId: user.id || 'user-1',
+          userName: user.name || 'Thành Viên',
+          movieSlug,
+          content,
+          rating,
+          createdAt: new Date().toISOString()
+        };
+        existing.unshift(newComment);
+        localStorage.setItem(localKey, JSON.stringify(existing));
+
+        return of({ success: true, data: newComment });
+      })
+    );
   }
 }
