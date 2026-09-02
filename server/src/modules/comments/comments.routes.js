@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const commentsController = require('./comments.controller');
-const authMiddleware = require('../../middlewares/auth.middleware');
+const { authenticate } = require('../../middlewares/auth.middleware');
 
 router.get('/:movieSlug', commentsController.getComments);
-router.post('/:movieSlug', authMiddleware, commentsController.addComment);
+router.post('/:movieSlug', authenticate, commentsController.addComment);
 
 module.exports = router;

@@ -36,17 +36,27 @@ export interface ApiResponse<T> {
 })
 export class ApiService {
   private get baseUrl(): string {
-    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return 'https://vsmov.com/api';
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api/v1/movies';
+      }
+      if (window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.')) {
+        return `http://${window.location.hostname}:5000/api/v1/movies`;
+      }
     }
-    return 'http://localhost:5000/api/v1/movies';
+    return 'https://vsmov.com/api';
   }
 
   private get serverBaseUrl(): string {
-    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return 'http://192.168.100.115:5000/api/v1';
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api/v1';
+      }
+      if (window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.')) {
+        return `http://${window.location.hostname}:5000/api/v1`;
+      }
     }
-    return 'http://localhost:5000/api/v1';
+    return 'http://192.168.100.115:5000/api/v1';
   }
 
   constructor(private http: HttpClient) {}
