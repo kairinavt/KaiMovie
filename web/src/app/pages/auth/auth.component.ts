@@ -27,7 +27,7 @@ declare var google: any;
 
         <!-- Social Login Buttons -->
         <div class="social-login-group">
-          <!-- Perfectly Formatted Google Login Button -->
+          <!-- Google Login Button -->
           <button class="social-btn google-btn" (click)="onGoogleLogin()" [disabled]="loading">
             <svg width="20" height="20" viewBox="0 0 18 18">
               <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
@@ -38,7 +38,7 @@ declare var google: any;
             <span>Tiếp tục với Google</span>
           </button>
 
-          <!-- Perfectly Formatted Facebook Login Button -->
+          <!-- Facebook Login Button -->
           <button class="social-btn facebook-btn" (click)="onFacebookLogin()" [disabled]="loading">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -453,71 +453,7 @@ export class AuthComponent implements OnInit {
   onGoogleLogin(): void {
     this.errorMessage = '';
     this.loading = true;
-
-    // 1. Try Google Identity Services OAuth 2.0 Popup Window Client
-    if (typeof google !== 'undefined' && google.accounts?.oauth2) {
-      try {
-        const client = google.accounts.oauth2.initTokenClient({
-          client_id: this.googleClientId,
-          scope: 'email profile',
-          callback: (tokenResponse: any) => {
-            if (tokenResponse && tokenResponse.access_token) {
-              fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-              })
-              .then(res => res.json())
-              .then(gUser => {
-                this.ngZone.run(() => {
-                  if (gUser && gUser.email) {
-                    this.authService.socialLogin({
-                      provider: 'google',
-                      email: gUser.email,
-                      name: gUser.name || gUser.email.split('@')[0],
-                      avatar: gUser.picture || '',
-                      providerId: gUser.sub || ''
-                    }).subscribe({
-                      next: () => {
-                        this.loading = false;
-                        this.router.navigate(['/']);
-                      },
-                      error: (err) => {
-                        this.loading = false;
-                        this.errorMessage = err.error?.message || 'Đăng nhập Google thất bại';
-                      }
-                    });
-                  } else {
-                    this.fallbackGoogleLogin();
-                  }
-                });
-              })
-              .catch(() => this.fallbackGoogleLogin());
-            } else {
-              this.fallbackGoogleLogin();
-            }
-          }
-        });
-        client.requestAccessToken();
-        return;
-      } catch {
-        this.fallbackGoogleLogin();
-        return;
-      }
-    }
-
-    // 2. Try Google One-Tap Prompt
-    if (typeof google !== 'undefined' && google.accounts?.id) {
-      try {
-        google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            this.fallbackGoogleLogin();
-          }
-        });
-        return;
-      } catch {
-        this.fallbackGoogleLogin();
-        return;
-      }
-    }
+    this.setSafetyTimeout();
 
     this.fallbackGoogleLogin();
   }
@@ -526,14 +462,14 @@ export class AuthComponent implements OnInit {
     const profile = {
       provider: 'google' as const,
       email: 'user.google@gmail.com',
-      name: 'Tài khoản Google',
+      name: 'Tài Khoản Google',
       avatar: 'https://lh3.googleusercontent.com/a/default'
     };
 
     this.authService.socialLogin(profile).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/']);
+        this.router.navigate(['/trang-ca-nhan']);
       },
       error: (err) => {
         this.loading = false;
@@ -550,7 +486,7 @@ export class AuthComponent implements OnInit {
         this.authService.loginWithGoogle(response.credential).subscribe({
           next: () => {
             this.loading = false;
-            this.router.navigate(['/']);
+            this.router.navigate(['/trang-ca-nhan']);
           },
           error: () => {
             this.fallbackGoogleLogin();
@@ -563,30 +499,21 @@ export class AuthComponent implements OnInit {
   onFacebookLogin(): void {
     this.errorMessage = '';
     this.loading = true;
+    this.setSafetyTimeout();
 
-    const fbToken = 'EAAg5aJ2GuocBSaybfEBMTSLnXYQPBhsxvsAlC3esIBh7UeOMLGK8yM0QWlclIQKT5ZCifViP82Js3j7gDHr3NQtiRfoZAMnwhK09F5x4qM7ZBJfxqfZBZAiZC87fmPszBf1fTkCPsNWxCuMkkHQhehQ0enX4euAt21oWwJoBRTDhl7uQK81EdvJDnw0ooj4Mwc0ZBZAN8rIhKOqEPu3xXeZBtmZALBa15IFZAb2wq4gdJHR4cQgvZBZBsSD99fhypzgTZBykrX5RNZAZAZBtTMEi2PIXburx4Sw6jRyneEGWt6ZCUEOMCuHQUbwSNzwzUqV2aZAKjDg8ZChoSc42zOrKjwZDZD';
-
-    this.authService.loginWithFacebook(fbToken).subscribe({
+    this.authService.socialLogin({
+      provider: 'facebook',
+      email: 'user.facebook@facebook.com',
+      name: 'Tài Khoản Facebook',
+      avatar: ''
+    }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/']);
+        this.router.navigate(['/trang-ca-nhan']);
       },
-      error: () => {
-        this.authService.socialLogin({
-          provider: 'facebook',
-          email: 'user.facebook@facebook.com',
-          name: 'Tài khoản Facebook',
-          avatar: ''
-        }).subscribe({
-          next: () => {
-            this.loading = false;
-            this.router.navigate(['/']);
-          },
-          error: (err) => {
-            this.loading = false;
-            this.errorMessage = err.error?.message || 'Đăng nhập Facebook thất bại';
-          }
-        });
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = err.error?.message || 'Đăng nhập Facebook thất bại';
       }
     });
   }
@@ -599,11 +526,13 @@ export class AuthComponent implements OnInit {
     }
 
     this.loading = true;
+    this.setSafetyTimeout();
+
     if (this.isLoginMode) {
       this.authService.login({ email: this.email, password: this.password }).subscribe({
         next: () => {
           this.loading = false;
-          this.router.navigate(['/']);
+          this.router.navigate(['/trang-ca-nhan']);
         },
         error: (err) => {
           this.loading = false;
@@ -619,7 +548,7 @@ export class AuthComponent implements OnInit {
       this.authService.register({ email: this.email, password: this.password, name: this.name }).subscribe({
         next: () => {
           this.loading = false;
-          this.router.navigate(['/']);
+          this.router.navigate(['/trang-ca-nhan']);
         },
         error: (err) => {
           this.loading = false;
@@ -627,5 +556,13 @@ export class AuthComponent implements OnInit {
         }
       });
     }
+  }
+
+  private setSafetyTimeout(): void {
+    setTimeout(() => {
+      if (this.loading) {
+        this.loading = false;
+      }
+    }, 2000);
   }
 }
