@@ -31,13 +31,14 @@ app.get('/api/v1/healthz', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'KaiMovie Backend API', timestamp: new Date().toISOString() });
 });
 
-// App version endpoint cho APK download & in-app update (Android)
+// App version endpoint cho APK download & in-app update (Android Mobile & Android TV)
 app.get('/api/v1/app/version', (req, res) => {
   res.status(200).json({
     latestVersionCode: 1,
     latestVersionName: '1.0.0',
     apkUrl: 'http://192.168.100.115:5000/downloads/kaimovie-app.apk',
-    changelog: 'Phiên bản khởi tạo đầu tiên',
+    tvApkUrl: 'http://192.168.100.115:5000/downloads/kaimovie-tv-app.apk',
+    changelog: 'Bổ sung phiên bản Android TV hỗ trợ điều khiển D-Pad Remote & Leanback UI',
     forceUpdate: false,
   });
 });

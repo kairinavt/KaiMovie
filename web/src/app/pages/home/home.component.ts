@@ -111,22 +111,25 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
           <p>Không tìm thấy phim nào trong danh mục này.</p>
         </div>
 
-        <!-- Android Mobile App APK Download Banner -->
+        <!-- Android Mobile & Android TV App APK Download Banner -->
         <div class="apk-banner-card">
           <div class="apk-banner-content">
-            <div class="apk-icon-badge">📱</div>
+            <div class="apk-icon-badge">📺</div>
             <div class="apk-info">
-              <h3>Tải Ứng Dụng KaiMovie Cho Android</h3>
-              <p>Trải nghiệm xem phim 4K mượt mà, hỗ trợ cửa sổ thu nhỏ Picture-in-Picture (PiP), không quảng cáo trên di động.</p>
+              <h3>Tải Ứng Dụng KaiMovie Cho Android & Android TV</h3>
+              <p>Trải nghiệm xem phim 4K mượt mà, hỗ trợ Remote điều khiển D-Pad trên TV và cửa sổ thu nhỏ PiP trên di động.</p>
               <div class="apk-features">
                 <span>⚡ Siêu Mượt 120 FPS</span>
-                <span>📺 Hỗ Trợ PiP</span>
+                <span>📺 Android TV & D-Pad</span>
                 <span>🔒 Đăng Nhập Server</span>
               </div>
             </div>
             <div class="apk-action">
               <a href="http://192.168.100.115:5000/downloads/kaimovie-app.apk" download="kaimovie-app.apk" class="btn-apk-download-hero">
-                ⬇️ Tải APK Miễn Phí (87MB)
+                📱 Tải APK Mobile (87MB)
+              </a>
+              <a href="http://192.168.100.115:5000/downloads/kaimovie-tv-app.apk" download="kaimovie-tv-app.apk" class="btn-apk-download-tv">
+                📺 Tải APK Android TV (87MB)
               </a>
             </div>
           </div>
@@ -174,24 +177,20 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       align-items: center;
       overflow: hidden;
       margin-bottom: 3rem;
-
-      @media (max-width: 768px) {
-        height: 420px;
-      }
     }
 
     .banner-backdrop {
       position: absolute;
       inset: 0;
+    }
 
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center 20%;
-        filter: brightness(0.7);
-        transition: all 0.5s ease;
-      }
+    .banner-backdrop img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 20%;
+      filter: brightness(0.7);
+      transition: all 0.5s ease;
     }
 
     .backdrop-gradient {
@@ -231,12 +230,8 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       font-size: 2.8rem;
       font-weight: 800;
       line-height: 1.15;
-      color: #fff;
+      color: #ffffff;
       text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-
-      @media (max-width: 768px) {
-        font-size: 1.9rem;
-      }
     }
 
     .hero-sub {
@@ -247,49 +242,49 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
     .hero-badges {
       display: flex;
       gap: 0.6rem;
+    }
 
-      .badge {
-        background: rgba(20, 24, 36, 0.85);
-        border: 1px solid var(--border-color);
-        padding: 4px 10px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        backdrop-filter: blur(10px);
-      }
+    .hero-badges .badge {
+      background: rgba(20, 24, 36, 0.85);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      backdrop-filter: blur(10px);
+    }
 
-      .badge-quality {
-        background: rgba(239, 68, 68, 0.9);
-        color: #fff;
-        border: none;
-      }
+    .hero-badges .badge-quality {
+      background: rgba(239, 68, 68, 0.9);
+      color: #ffffff;
+      border: none;
+    }
 
-      .badge-ep {
-        background: rgba(168, 85, 247, 0.85);
-        color: #fff;
-        border: none;
-      }
+    .hero-badges .badge-ep {
+      background: rgba(168, 85, 247, 0.85);
+      color: #ffffff;
+      border: none;
+    }
 
-      .badge-gold {
-        color: #fbbf24;
-        border-color: rgba(251, 191, 36, 0.4);
-      }
+    .hero-badges .badge-gold {
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.4);
     }
 
     .hero-actions {
       display: flex;
       gap: 1rem;
       margin-top: 0.75rem;
+    }
 
-      .btn {
-        padding: 0.8rem 1.6rem;
-        font-size: 1rem;
-        border-radius: 30px;
-      }
+    .hero-actions .btn {
+      padding: 0.8rem 1.6rem;
+      font-size: 1rem;
+      border-radius: 30px;
+    }
 
-      .btn-play {
-        box-shadow: 0 4px 25px var(--primary-glow);
-      }
+    .hero-actions .btn-play {
+      box-shadow: 0 4px 25px var(--primary-glow);
     }
 
     .hero-dots {
@@ -306,13 +301,13 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       border: none;
       cursor: pointer;
       transition: all 0.3s ease;
+    }
 
-      &.active {
-        width: 32px;
-        border-radius: 10px;
-        background: var(--primary-gradient);
-        box-shadow: 0 0 10px var(--primary-glow);
-      }
+    .dot-btn.active {
+      width: 32px;
+      border-radius: 10px;
+      background: var(--primary-gradient);
+      box-shadow: 0 0 10px var(--primary-glow);
     }
 
     /* Filter Chips Bar */
@@ -323,10 +318,6 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       margin-bottom: 2rem;
       overflow-x: auto;
       padding-bottom: 0.5rem;
-
-      &::-webkit-scrollbar {
-        height: 4px;
-      }
     }
 
     .chip-btn {
@@ -340,24 +331,24 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.3s ease;
+    }
 
-      &:hover {
-        background: rgba(30, 37, 56, 0.9);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.2);
-      }
+    .chip-btn:hover {
+      background: rgba(30, 37, 56, 0.9);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
 
-      &.active {
-        background: var(--primary-gradient);
-        color: #fff;
-        border-color: transparent;
-        box-shadow: 0 4px 15px var(--primary-glow);
-      }
+    .chip-btn.active {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 15px var(--primary-glow);
     }
 
     /* APK Download Banner Section */
     .apk-banner-card {
-      margin-top: 3rem;
+      margin-top: 3.5rem;
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 18, 28, 0.9) 100%);
       border: 1px solid rgba(16, 185, 129, 0.4);
       border-radius: 20px;
@@ -370,11 +361,6 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       align-items: center;
       justify-content: space-between;
       gap: 1.5rem;
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        text-align: center;
-      }
     }
 
     .apk-icon-badge {
@@ -392,61 +378,70 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
 
     .apk-info {
       flex: 1;
+    }
 
-      h3 {
-        font-family: var(--font-heading);
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #fff;
-        margin-bottom: 0.4rem;
-      }
+    .apk-info h3 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.4rem;
+    }
 
-      p {
-        color: #94a3b8;
-        font-size: 0.92rem;
-        margin-bottom: 0.8rem;
-      }
+    .apk-info p {
+      color: #94a3b8;
+      font-size: 0.92rem;
+      margin-bottom: 0.8rem;
     }
 
     .apk-features {
       display: flex;
       gap: 0.75rem;
       flex-wrap: wrap;
-
-      @media (max-width: 768px) {
-        justify-content: center;
-      }
-
-      span {
-        background: rgba(255, 255, 255, 0.08);
-        padding: 0.3rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #e2e8f0;
-      }
     }
 
-    .btn-apk-download-hero {
+    .apk-features span {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.3rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .apk-action {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .btn-apk-download-hero, .btn-apk-download-tv {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #fff;
+      color: #ffffff;
       font-weight: 800;
-      font-size: 1rem;
-      padding: 0.9rem 1.8rem;
-      border-radius: 30px;
+      font-size: 0.92rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 25px;
       text-decoration: none;
-      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
       white-space: nowrap;
       transition: all 0.3s ease;
+    }
 
-      &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
-        color: #fff;
-      }
+    .btn-apk-download-hero {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-apk-download-tv {
+      background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+    }
+
+    .btn-apk-download-hero:hover, .btn-apk-download-tv:hover {
+      transform: translateY(-3px);
+      color: #ffffff;
     }
 
     /* Skeleton Loading */
@@ -508,18 +503,27 @@ import { MovieCardComponent } from '../../shared/components/movie-card/movie-car
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.3s ease;
+    }
 
-      &:hover {
-        background: rgba(30, 37, 56, 0.9);
-        color: #fff;
-      }
+    .page-num-btn:hover {
+      background: rgba(30, 37, 56, 0.9);
+      color: #ffffff;
+    }
 
-      &.active {
-        background: var(--primary-gradient);
-        color: #fff;
-        border-color: transparent;
-        box-shadow: 0 4px 15px var(--primary-glow);
-      }
+    .page-num-btn.active {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    @media (max-width: 768px) {
+      .hero-banner { height: 420px; }
+      .hero-title { font-size: 1.9rem; }
+      .apk-banner-content { flex-direction: column; text-align: center; }
+      .apk-features { justify-content: center; }
+      .apk-action { width: 100%; }
+      .btn-apk-download-hero, .btn-apk-download-tv { width: 100%; }
     }
   `]
 })

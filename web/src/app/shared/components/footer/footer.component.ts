@@ -55,17 +55,27 @@ import { RouterModule } from '@angular/router';
           </ul>
         </div>
 
-        <!-- Col 4: Mobile App Download Badge -->
+        <!-- Col 4: Mobile & TV App Download Badges -->
         <div class="footer-col app-col">
-          <h4 class="footer-heading">Ứng Dụng Mobile</h4>
-          <p class="app-desc">Tải ngay ứng dụng KaiMovie dành riêng cho thiết bị di động Android:</p>
+          <h4 class="footer-heading">Ứng Dụng Mobile & TV</h4>
+          <p class="app-desc">Tải ứng dụng KaiMovie hỗ trợ Android Mobile và Android TV Remote:</p>
+
           <a href="http://192.168.100.115:5000/downloads/kaimovie-app.apk" download="kaimovie-app.apk" class="btn-apk-footer">
             <span class="apk-icon">📱</span>
             <div class="apk-text">
-              <span class="apk-sub">TẢI VỀ CHO ANDROID</span>
-              <span class="apk-title">KaiMovie.apk (v1.0)</span>
+              <span class="apk-sub">TẢI VỀ CHO ANDROID MOBILE</span>
+              <span class="apk-title">KaiMovie-App.apk (v1.0)</span>
             </div>
           </a>
+
+          <a href="http://192.168.100.115:5000/downloads/kaimovie-tv-app.apk" download="kaimovie-tv-app.apk" class="btn-apk-footer btn-tv-footer">
+            <span class="apk-icon">📺</span>
+            <div class="apk-text">
+              <span class="apk-sub">TẢI VỀ CHO ANDROID TV</span>
+              <span class="apk-title">KaiMovie-TV.apk (v1.0)</span>
+            </div>
+          </a>
+
           <div class="server-status">
             <span class="status-dot"></span> Server API: <strong>Online (200 OK)</strong>
           </div>
@@ -101,14 +111,6 @@ import { RouterModule } from '@angular/router';
       grid-template-columns: repeat(4, 1fr);
       gap: 2.5rem;
       padding-bottom: 3rem;
-
-      @media (max-width: 992px) {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      @media (max-width: 576px) {
-        grid-template-columns: 1fr;
-      }
     }
 
     .footer-col {
@@ -134,7 +136,7 @@ import { RouterModule } from '@angular/router';
       font-family: var(--font-heading);
       font-weight: 800;
       font-size: 1.4rem;
-      color: #fff;
+      color: #ffffff;
       box-shadow: 0 4px 15px var(--primary-glow);
     }
 
@@ -142,9 +144,12 @@ import { RouterModule } from '@angular/router';
       font-family: var(--font-heading);
       font-size: 1.5rem;
       font-weight: 800;
-      color: #fff;
+      color: #ffffff;
       letter-spacing: -0.5px;
-      span { color: var(--primary); }
+    }
+
+    .logo-text span {
+      color: var(--primary);
     }
 
     .brand-desc {
@@ -172,33 +177,33 @@ import { RouterModule } from '@angular/router';
       align-items: center;
       gap: 0.4rem;
       transition: all 0.3s ease;
+    }
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-      }
+    .social-icon:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
     }
 
     .footer-heading {
       font-family: var(--font-heading);
       font-size: 1.1rem;
       font-weight: 800;
-      color: #fff;
+      color: #ffffff;
       position: relative;
       padding-bottom: 0.5rem;
+    }
 
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 30px;
-        height: 3px;
-        background: var(--primary-gradient);
-        border-radius: 2px;
-      }
+    .footer-heading::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 30px;
+      height: 3px;
+      background: var(--primary-gradient);
+      border-radius: 2px;
     }
 
     .footer-links {
@@ -206,18 +211,18 @@ import { RouterModule } from '@angular/router';
       display: flex;
       flex-direction: column;
       gap: 0.65rem;
+    }
 
-      a {
-        color: var(--text-muted);
-        font-size: 0.88rem;
-        font-weight: 500;
-        transition: all 0.25s ease;
+    .footer-links a {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.25s ease;
+    }
 
-        &:hover {
-          color: #fff;
-          padding-left: 5px;
-        }
-      }
+    .footer-links a:hover {
+      color: #ffffff;
+      padding-left: 5px;
     }
 
     .app-desc {
@@ -230,22 +235,26 @@ import { RouterModule } from '@angular/router';
       align-items: center;
       gap: 0.8rem;
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #fff;
-      padding: 0.75rem 1.2rem;
+      color: #ffffff;
+      padding: 0.65rem 1rem;
       border-radius: 14px;
       text-decoration: none;
       box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
       transition: all 0.3s ease;
+    }
 
-      &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.55);
-        color: #fff;
-      }
+    .btn-tv-footer {
+      background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.35);
+    }
+
+    .btn-apk-footer:hover {
+      transform: translateY(-3px);
+      color: #ffffff;
     }
 
     .apk-icon {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
     }
 
     .apk-text {
@@ -254,14 +263,14 @@ import { RouterModule } from '@angular/router';
     }
 
     .apk-sub {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 800;
       opacity: 0.9;
       letter-spacing: 0.5px;
     }
 
     .apk-title {
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 800;
     }
 
@@ -280,7 +289,6 @@ import { RouterModule } from '@angular/router';
       border-radius: 50%;
       background: #10b981;
       box-shadow: 0 0 10px #10b981;
-
       animation: pulse 2s infinite;
     }
 
@@ -301,26 +309,29 @@ import { RouterModule } from '@angular/router';
       justify-content: space-between;
       color: #64748b;
       font-size: 0.82rem;
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 0.6rem;
-        text-align: center;
-      }
     }
 
     .legal-links {
       display: flex;
       align-items: center;
       gap: 0.6rem;
+    }
 
-      a:hover {
-        color: var(--text-muted);
-      }
+    .legal-links a:hover {
+      color: var(--text-muted);
     }
 
     .dot {
       color: #334155;
+    }
+
+    @media (max-width: 992px) {
+      .footer-main { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 576px) {
+      .footer-main { grid-template-columns: 1fr; }
+      .bottom-content { flex-direction: column; gap: 0.6rem; text-align: center; }
     }
   `]
 })
